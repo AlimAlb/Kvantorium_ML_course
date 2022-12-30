@@ -54,7 +54,7 @@
 
 
 Другой пример сортировки пузырком (гифка):
-![alt-text](https://github.com/AlimAlb/Kvantorium_ML_course/blob/main/bubble_sort.gif)
+![alt-text](https://github.com/AlimAlb/Kvantorium_ML_course/blob/main/28-dec-22--lists/bubble_sort.gif)
 
 
 Реализуйте алгоритм сортитовки пузырьком. Напишите программу, которая считывает сначала количество элементов в списке, а затем заданное число элементов в консоли. После - выводит эти элементы в отсортированном порядке. <br />
