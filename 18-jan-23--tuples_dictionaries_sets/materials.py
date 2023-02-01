@@ -1,180 +1,190 @@
-import math as m
-#-----------------------------------------------------------------------------------------------------
-#Кортежи: кортежи по сути своей дублируют по структуре списки, однако главное их отличие - неизменяемость. 
-#Ни длину ни отдельные элементы кортежа менять нельзя, у этого есть свои полезные свойства, однако в полной мере мы их
-#оценим позже, пока будем считать что кортежи - это более подходящий для предоставления информации вариант, чем списки, 
-#так как дает читать информацию, но не дает изменять.
+#Кортежи - те же списки, только не изменяемые.
 
-# tup = (1,2,3,4)
-# print(tup)
-# tup[1] = 0
-#-----------------------------------------------------------------------------------------------------
-#Словари
-#Словари - это структура данных, которая позволяет хранить данные в формате "key" : "value". Ключи, очевидно должны быть уникальны
-#Значения - не обязательно
-# dc = {
-#     'key_1': 1, 
-#     'key_2': 10, 
-#     'key_3': 100
-# }
-# dc['key_4'] = 1000
-# print(dc['key_1'])
-# print(dc.keys())
-# print(list(dc.keys()))
-# print(dc.values())
-# print(list(dc.values()))
-# print(dc.items())
-# print(list(dc.items()))
-# print()
-# for key in dc.keys():
-#     print('key:', key, ", value:", dc[key])
-# print()
-# for value in dc.values():
-#     print(value)
-# print()
-# for item in dc.items():
-#     print(item)
-# print()
-# dc.pop('key_2')
-# print(dc)
-#TODO:
+tup_1 = (1,2,3,4)
+
+tup_2 = (1,'Name', 3)
+
+print(tup_1, tup_2)
+
+#tup_1[0] = 2 - такое сделать нельзя
+
+
+#--------------------------------------------------------------------------------------------------------------
+#Словари - структура данных, в которой данные храняться в формате ключ-значение. Ключи не могут повторяться.
+
+#key_1 : value_1
+#key_2 : value_2
+
+
+dc = { "name":'Alim', 'surname': 'Albogachiev', 'salary': 100000, 'status': 'manager'} # вот так словарь задается
+
+print(dc['name']) #достать элемент из словаря можно также как и из списка, только вместо индекса - ключ
+
+print(dc['salary']) 
+
+lst = list(dc.keys()) # с помощью метода keys можно достать все ключи словаря
+print(lst)
+
+print(dc.values()) # c помощью метода values можно достать все значения из словаря
+print(list(dc.values()))
+
+print(dc.items())# c помощью метода items можно достать список из кортежей по два элемента - ключ и значение
+lst = list(dc.items())
+print(lst[0])
+
+for key in dc.keys(): # есть несколько способов перебрать элементы словаря, выбор зависит от задачи. Можно перебирать поочередно перебирая ключи и по ключу доставая элемент
+    print(dc[key])
+
+for value in dc.values(): # либо перебирать напрямую значения
+    print(value)
+
+for item in dc.items(): # либо перебирать список из кортежей пар ключ значение
+    print(item[0].upper(), item[1])
+
+
+
+#Простая программа для учета яблок, бананов и клубники на складе. 
+dc = {
+    'apple' : 0,
+    'strawberry' : 0,
+    'bananas' : 0
+}
+while True: # пока не будет команды остановиться - мы будем считывать строку из названия и количества товаров, а затем будем добавлять количество товаров по соотвествующему ключу
+    inp = input('>').split() #bananas 10
+    if inp[0] == 'exit':
+        break
+    dc[inp[0]] += int(inp[1])
+    print(dc)
+
+
+
+#--------------------------------------------------------------------------------------------------------------
+#Множества в питоне являются прямыми аналогами множества из математики. Множества являются не упорядоченными, из него нельзя достать элемент по индексу
+#Также множество не хранит дубликатов элементов, любые дублирующиеся элементы будут сводится к одному.
+
+st_1 = set([1,2,3,4,5])
+st_2 = set([3,4,5,10,11])
+
+# st1 - st2 = 1,2,3,4,5 - 3,4,5 = 1,2
+# st2 - st1 = 10,3,4,5 // 1,2,3,4,5 = 10
+
+print(st_2.intersection(st_1)) # операция пересечения множеств - пересечением {1,2,3,4,5} и {3,4,5,10,11} является множество {3,4,5}
+print(st_2.union(st_1)) # операция объединения множеств - объединением {1,2,3,4,5} и {3,4,5,10,11} является множество {1,2,3,4,5,10,11}
+print(st_2.difference(st_1))# операция вычитания множеств - разность st2-st1 = {10,11}
+print(st_1.difference(st_2))# операция вычитания множеств - разность st1-st2 = {1,2}
+
+
+#--------------------------------------------------------------------------------------------------------------
+#TODO: Переделать код базы данных под хранение данных в виде словарей.
+data_base = []
+statuses = ['CEO', 'manager', 'software_engineer']
+
+while True:
+    oper = input('>')
+    if oper == 'add':
+        info = input('>')
+        info_lst = info.split('|')
+        if not(len(info_lst) == 4):
+            print('Error: wrong_format')
+            continue
+        if not(info_lst[0].isalpha()):
+            print('Error: wrong_name')
+            continue
+        if not(info_lst[1].isalpha()):
+            print('Error: wrong_surname')
+            continue
+        if not(info_lst[2].isdigit()):
+            print('Error: wrong_salary')
+            continue
+        if not(info_lst[3] in statuses):
+            print('Error: wrong_status')
+            continue
+        
+        info_lst[2] = int(info_lst[2]) 
+        info_dc = { #все то же самое, только теперь данные о человеке будут храниться в виде словаря и тут мы его создаем
+            'name': info_lst[0], 
+            'surname': info_lst[1], 
+            'salary': info_lst[2], 
+            'status': info_lst[3], 
+        }
+        data_base.append(info_dc) #добавляем словарь с данными в базу данных
+    
+    if oper == 'delete':
+        info = input('>')
+        info_lst = info.split('|')
+        if not(len(info_lst) == 4):
+            print('Error: wrong_format')
+            continue
+        if not(info_lst[0].isalpha()):
+            print('Error: wrong_name')
+            continue
+        if not(info_lst[1].isalpha()):
+            print('Error: wrong_surname')
+            continue
+        if not(info_lst[2].isdigit()):
+            print('Error: wrong_salary')
+            continue
+        if not(info_lst[3] in statuses):
+            print('Error: wrong_status')
+            continue
+        info_lst[2] = int(info_lst[2])
+
+        delete_index = None
+        for i in range(len(data_base)):
+            if (info_lst[0] == data_base[i]['name'] and 
+                info_lst[1] == data_base[i]['surname'] and
+                info_lst[2] == data_base[i]['salary'] and
+                info_lst[3] == data_base[i]['status']):
+                delete_index = i
+                break
+        data_base.pop(delete_index)
+
+
+
+    if oper == 'exit':
+        break
+
+    print(data_base)
+
+
+
+#--------------------------------------------------------------------------------------------------------------
 #На вход программе подаются имена учеников и ряд их оценок. Нужно сохранить все в словарь, посчитать итоговую как среднюю и
 #разделить учеников в новый словарь по итоговой оценке.
+students = {} 
+
+n = int(input('Введите количество учеников:')) # считываем всех учеников: сначала имена, а потом список оценок ученика.
+for i in range(n):
+    name = input('Введите имя:')
+    lst = []
+    for i in range(5):
+        lst.append(int(input()))
+    students[name] = lst # по ключу имени ученика добавляем как значение список его оценок.
+
+avg = {} 
+
+for item in students.items(): #проходимся по всем парам ключ-значение из словаря с учениками. Для каждого ученика считаем среднюю оценку и создаем словарь средних оценок для каждого ученика
+    summ = 0
+    for grade in item[1]:
+        summ += grade
+    avg[item[0]] = summ/len(item[1])
+
+grades = { #словарь с оценками в виде ключей и пустыми списками в виде значений. Мы будем заполнять их именами учеников с соотвествующими оценками
+    0: [],
+    1: [],
+    2: [],
+    3: [],
+    4: [],
+    5: []
+}
+
+for key in avg.keys(): # проходим по словарю со средними оценками и по ключу округленной средней оценки добавляем имя ученика в соотвествующий список словаря
+
+    grades[int(round(avg[key], 0))].append(key)
+
+print(grades)
+
+    
+    
 
 
-
-#TODO:
-#переписать базу данных под словари
-#Добавить возможность кастомных полей
-#-----------------------------------------------------------------------------------------------------
-#Sets
-# st_1 = set([('1', '2'), ('2', '3'), ('2', '4'), ('1', '7')])
-# st_2 = set([('2', '2'), ('2', '3'), ('0', '4'), ('1', '7')])
-
-# print(st_2.intersection(st_1))
-# print(st_2.intersection(st_1))
-# print(st_2.difference(st_1))
-#Во время переписи населения часто случались ситуации, когда переписчики записывали одних и тех же людей по несколько раз.
-#У нас есть списки людей: Имя|Фамилия|Отчество|год рождения от разных переписчиков. Нужно составить единый список всех людей
-#без повторов используя методы set.
-#-----------------------------------------------------------------------------------------------------
-#Data base with file(working with files, parser) and dictionaries
-#f = open(filename, mode)
-# r: open an existing file for a read operation.
-# w: open an existing file for a write operation. If the file already contains some data then it will be overridden but if the file is not present then it creates the file as well.
-# a:  open an existing file for append operation. It won’t override existing data.
-# r+:  To read and write data into the file. The previous data in the file will be overridden.
-# w+: To write and read data. It will override existing data.
-# a+: To append and read data from the file. It won’t override existing data.
-# file = open('file.txt', 'w')
-# print(type(file))
-
-# #write something
-# file.write('Some line')#writes string to file
-# file.close()#CLOSE FILES
-# #file.write('closed') # u cant write in closed file
-# file = open('file_1.txt', 'w')
-# file.writelines(['Line_1\n','Line_2\n', 'Line_3\n', 'Line_4\n'])
-# file.close()
-
-# #example with a
-# file = open('file_1.txt', 'a')
-# file.write('Appended line\n')
-# file.close()
-
-# #example with r
-# file = open('file_1.txt', 'r')
-# print(file.readline()[:-1])
-# print(file.readline()[:-1])
-# print(file.readline()[:-1])
-# print(file.readline()[:-1])
-# file.close()
-
-# #simple parser
-# row = {
-#         'name': 'Alim', 
-#         'surname': 'Albogachiev', 
-#         'salary': 20000, 
-#         'status': 'teacher'
-#         }
-# columns = list(row.keys())
-# data = [row['name'], row['surname'], str(row['salary']), row['status']]
-# file = open('db.txt', 'a')
-# file.write('|'.join(columns) + '\n')
-# file.write('|'.join(data) + '\n')
-# file.close()
-
-# #read
-# file = open('db.txt', 'r')
-# columns = file.readline()[:-1].split('|')
-# print(columns)
-# data = file.readline()[:-1].split('|')
-# print(data)
-
-# #TODO: Реализовать базу данных на произвольных колонках с возможностью удаления и добавления элементов
-
-# #Nested dictionaries
-# company_structure = {
-#     'marketing':{
-#         'director': { 'name': 'John', 'surname': 'Snnerman', 'salary': 120000}, 
-#         'manager_1': { 'name': 'Hon', 'surname': 'Son', 'salary': 60000}, 
-#         'manager_1': { 'name': 'Arnold', 'surname': 'Ravovsky', 'salary': 60000}, 
-#     }, 
-#     'IT':{
-#         'team lead': { 'name': 'Ann', 'surname': 'Kindy', 'salary': 250000}, 
-#         'engineer_1': { 'name': 'Dag', 'surname': 'Adamson', 'salary': 100000}, 
-#         'engineer_2': { 'name': 'Denis', 'surname': 'Sink', 'salary': 100000}, 
-#         'engineer_3': { 'name': 'Arnold', 'surname': 'Ravovsky', 'salary': 100000}, 
-#     }, 
-#     'analytics':{
-#         'Team Lead': { 'name': 'Ser', 'surname': 'Qwerty', 'salary': 150000}, 
-#         'analytic_1': { 'name': 'Fill', 'surname': 'Sata', 'salary': 120000}, 
-#         'analytic_2': { 'name': 'Virgil', 'surname': 'Snyder', 'salary': 120000}, 
-#     }
-# }
-
-# for key in company_structure:
-#     print(company_structure[key])
-
-#если успеем разобрать это, то начать разбираться с функциями и переписать базу данных на функциях
-
-# #functions
-# def func(a, b): # <- arguments
-#     out = a + b
-#     return out # <- output value
-
-# result = func(3, 4)
-# print(result)
-
-# def print_s_n_times(s, n): # <- this function doesnt return anything
-#     print(s*n)
-
-# result = print_s_n_times('Hello', 5)
-# print(result)
-
-# def print_s_n_times(s, n): # <- this function doesnt return anything
-#     print(s*n)
-#     return None # <- not a value(blank value)
-
-
-# result = print_s_n_times('Hello', 5)
-# print(result)
-
-
-#function arguments
-#a*c^2*b^3, by default b = 2, c = 3
-# def val(a, b =2, c = 3):
-#     return a * c**2 * b**3
-
-#Nested functions
-# e^sin(log(x^2))
-def square(a):
-    return a**2
-
-def sin(a):
-    return m.sin(a)
-
-a = 10
-result = m.exp(sin(m.log(square(a))))
-
-print(result)
