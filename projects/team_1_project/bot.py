@@ -1,5 +1,3 @@
-
-
 import logging
 from main import analyzer
 import aiogram.utils.markdown as md
@@ -13,7 +11,7 @@ from aiogram.utils import executor
 
 logging.basicConfig(level=logging.INFO)
 
-API_TOKEN = '6084640036:AAGYfxMgPDksXWulRbQ6sx578h4xvKolWv0'
+API_TOKEN = open('token.txt').read()
 
 
 bot = Bot(token=API_TOKEN)
@@ -59,7 +57,7 @@ async def process_name(message: types.Message, state: FSMContext):
         s_out = f"📟Similarity = {round(output[0], 2)}\n\n"
         s_out += '🔝Important words:\n'
         for word in output[1]:
-            s_out += "   " +  word + " - " + str(abs(round(output[1][word], 2))) + '\n'
+            s_out += "      " +  word + " - " + str(abs(round(output[1][word], 2))) + '\n'
         
         await message.reply(s_out)
     await state.finish()
