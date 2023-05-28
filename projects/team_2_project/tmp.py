@@ -137,7 +137,6 @@ class Game:
                     return True
 
     def check_hit(self):
-        print(set(self.get_bricks()[0].get_points()).intersection(set(self.get_player().get_points())))
         for brick in self.__lst_bricks:
             if self.is_intersection(self.get_player().get_points(), brick.get_points()):
                 self.__gameover = True
@@ -222,8 +221,21 @@ class Engine:
         
         for brick in self.__game.get_bricks():
             scene = self.draw_item(brick, scene)
+        
+        scene.insert(0, f"{self.__game.get_fps() // 10}\n")
 
         return scene
+
+
+#       ||  
+#       ||
+#       ||
+
+
+#       ---
+#       | |
+#       ---
+
 
 
 #adress
@@ -239,9 +251,9 @@ def main():
         os.system('clear')
         game.step()
         print("".join(engine.frame()))
-        time.seep(0.05)
+        time.sleep(0.05)
     thrd.stop()
     
         
-main()
+main() 
 
