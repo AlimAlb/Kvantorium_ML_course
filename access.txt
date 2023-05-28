@@ -1,0 +1,6 @@
+script.py W X R
+photo.jpg R
+bot.py W
+video.mp3 R
+file.pdf W R
+document.docx W R

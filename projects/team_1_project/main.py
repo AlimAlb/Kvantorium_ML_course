@@ -18,6 +18,7 @@ def most_valuable_words(v1, v2, unique_words, top_n = 10):
     idx = top_n if top_n < len(w_2_v) else len(w_2_v)
     sorted_w2v = dict(sorted(w_2_v.items(), key=lambda x: abs(x[1]), reverse=True) [:idx])
     return sorted_w2v
+    
 
 
 def analyzer(text1, text2, top_n = 10):

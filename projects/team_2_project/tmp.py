@@ -1,23 +1,36 @@
+#TODO: 
+# 1. Меню 
+# 2. Выбор сложности в меню
+# 3. Подсчет очков в игре
+# 4. Переход между игрой и меню (возможно меню загрузки или обратный отсчет)
+
+
+
+
 import os 
 from pynput import keyboard
 import time
+import os 
+import random as rnd
 
 LENTH = 150 
 WIDTH = 30
-
+SPACE = " "
+BRICKS_TEXTURES_PATH = 'bricks/'
+DEFAULT_DISTANCE = 40
+MAX_JUMP = 15
     
 def on_press(key, game):
-    try:
-        if key == keyboard.Key.up:
-            game.jump()
-    except AttributeError:
-        print("Whoops... something went wrong!")
+    if key == keyboard.Key.up:
+        game.jump()
         
 
 def controle(game):
     listener = keyboard.Listener(
     on_press=lambda x: on_press(x, game))
     listener.start()
+    return listener
+
 
 class game_object:
     def __init__(self, x, y, path):
@@ -48,7 +61,7 @@ class game_object:
         print('y =', self.y)
         print('path =', self.path)
 
-    def square(self, s_lst):
+    def __square(self, s_lst):
         max_l = max([len(s) for s in s_lst])
         for i in range(len(s_lst)):
             if len(s_lst[i]) < max_l:
@@ -61,8 +74,20 @@ class game_object:
     def get_view(self):
         file = open(self.path, 'r')
         s_lst = file.readlines()
-        squared = self.square(s_lst)
+        squared = self.__square(s_lst)
         return squared
+
+    def get_points(self):
+        points = []
+        view = self.get_view()
+        for i in range(len(view)):
+            for j in range(len(view[0])-1):
+                if view[i][j] != SPACE:
+                    points.append(
+                        (self.get_x() + j,
+                        self.get_y() + (len(view)-i))
+                        )
+        return points
 
 
 class Game:
@@ -72,18 +97,20 @@ class Game:
         self.__is_jumping = False
         self.__going_up = False 
         self._fps = 0
+        self.__gameover = False
 
     def get_player(self):
         return self.__player
+
+    def is_gameover(self):
+        return self.__gameover
 
     def get_bricks(self):
         return self.__lst_bricks
 
 
-    def __move_bricks(self):
-        pass
-        # for brick in self.__lst_bricks:
-        #     brick.set_x(brick.get_x - 1)
+    def get_fps(self):
+        return self._fps
 
     def jump(self):
         if not(self.__is_jumping):
@@ -103,29 +130,52 @@ class Game:
                 else:
                     self.__is_jumping = False
 
+    def is_intersection(self, points_a, points_b):
+        for a in points_a:
+            for b in points_b:
+                if a[0] == b[0] and a[1] == b[1]:
+                    return True
+
     def check_hit(self):
-        pass
-        #TODO
+        print(set(self.get_bricks()[0].get_points()).intersection(set(self.get_player().get_points())))
+        for brick in self.__lst_bricks:
+            if self.is_intersection(self.get_player().get_points(), brick.get_points()):
+                self.__gameover = True
+
+    
 
 
+    def __make_a_brick(self):
+        textures = os.listdir(BRICKS_TEXTURES_PATH)
+        idx = rnd.randint(0, len(textures)-1)
+        return game_object(LENTH, 0, BRICKS_TEXTURES_PATH + textures[idx])
+
+    def __check_bricks(self, default_distance):
+        if self.__lst_bricks[0].get_x() + len(self.__lst_bricks[0].get_view()[0]) < 0:
+            self.__lst_bricks.pop(0)
+        
+        if LENTH - self.__lst_bricks[-1].get_x()  > default_distance:
+            self.__lst_bricks.append(self.__make_a_brick())
+
+    def __move_bricks(self):
+        for item in self.__lst_bricks:
+            item.set_x(item.get_x()-1)
+            
 
     
     def step(self):
-        #self.move_bricks()
         if self.__is_jumping:
-            self.__in_jump(2)
+            self.__in_jump(MAX_JUMP)
 
-        #move_bricks()
-
+        self.__check_bricks(DEFAULT_DISTANCE)
+        self.__move_bricks()
+        self.check_hit()
+        # вставить код с проверкой удара об препятствие 
+        #
         self._fps += 1
-        
 
-        
+        # осталась только проверка на соударение
 
-        
-        #is jump pressed
-        #if jump is pressed
-        #is there hit
 
 class Engine:
     def __init__(self, l, w, game):
@@ -139,7 +189,7 @@ class Engine:
         for i in range(self.__w):
             tmp = ''
             for j in range(self.__l):
-                tmp += '_'
+                tmp += SPACE
             scene.append(tmp + '\n')
         return scene
 
@@ -149,69 +199,49 @@ class Engine:
                 return True
         return False
 
+    def draw_item(self, item, scene):
+        view = item.get_view()
+        view_l = len(view[0])
+        view_w = len(view)
+
+        x_start = item.get_x()
+        y_start = len(scene) - 1 - item.get_y()
+        for i in  range(view_w-1, -1, -1):
+            for j in range(view_l-1):
+                args = [len(scene), len(scene[0]), y_start - (view_w-1 - i), x_start +j]
+                if self.check_boundaries(*args):
+                    scene[y_start - (view_w-1 - i)]  = scene[y_start - (view_w-1 - i)][:x_start +j] + view[i][j] + scene[y_start - (view_w-1 - i)][x_start +j+1:]
+        
+        return scene
 
     def frame(self):
+        
         scene = self.get_scene()
 
-        view = self.__game.get_player().get_view()
-        view_l = len(view[0])
-        view_w = len(view)
-
-        x_start = self.__game.get_player().get_x()
-        y_start = len(scene) - 1 - self.__game.get_player().get_y()
-        for i in  range(view_w-1, 0, -1):
-            for j in range(view_l-1):
-                args = [len(scene), len(scene[0]), y_start - (view_w-1 - i), x_start +j]
-                if self.check_boundaries(*args):
-                    scene[y_start - (view_w-1 - i)]  = scene[y_start - (view_w-1 - i)][:x_start +j] + view[i][j] + scene[y_start - (view_w-1 - i)][x_start +j+1:]
-
-        view = self.__game.get_bricks()[0].get_view()
-        view_l = len(view[0])
-        view_w = len(view)
-
-        for i in  range(view_w-1, 0, -1):
-            for j in range(view_l-1):
-                args = [len(scene), len(scene[0]), y_start - (view_w-1 - i), x_start +j]
-                if self.check_boundaries(*args):
-                    scene[y_start - (view_w-1 - i)]  = scene[y_start - (view_w-1 - i)][:x_start +j] + view[i][j] + scene[y_start - (view_w-1 - i)][x_start +j+1:]
-
+        scene = self.draw_item(self.__game.get_player(), scene)
+        
+        for brick in self.__game.get_bricks():
+            scene = self.draw_item(brick, scene)
 
         return scene
 
 
-
-    
 #adress
 #по мере ухода из кадра препятсвий - удалять их
 def main():
-    player = game_object(-5,0,'player.txt')
-    brick = game_object(LENTH-2, 0, 'brick.txt')
+    player = game_object(0,0,'player.txt')
+    brick = game_object(LENTH-3, 0, 'bricks/brick.txt')
+    
     game = Game(player, [brick])
     engine = Engine(LENTH, WIDTH, game)
-    controle(game)
-    while True:
+    thrd = controle(game)
+    while not(game.is_gameover()):
+        os.system('clear')
         game.step()
         print("".join(engine.frame()))
-        time.sleep(0.1)
-        os.system('clear')
+        time.seep(0.05)
+    thrd.stop()
+    
         
 main()
 
-
-# 150 x 30
-# 150 -> 160 -> 170 -> 
-
-
-
-
-# 10, 20, 150, 20
-def generate(n, fps, max_x, start_distance): # -> Исмаил и Адам
-    # -> Генерировать объекты класса game_object  - препятсвтвия. Генерует n-штук препятсвий, start_distance - fps//100. 
-    # Координата первого препятсвия в списке = max_x. 
-    # [game_obj, game_obj1, ... ]
-
-
-
-def check_hit(player, lst_bricks): # сделать список из координат и проверять поточечно
-    pass
-    # -> Амир 
