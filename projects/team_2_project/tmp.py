@@ -1,7 +1,7 @@
 #TODO: 
 # 1. Меню 
-# 2. Выбор сложности в меню
-# 3. Подсчет очков в игре
+# 2. Выбор сложности в меню 
+# 3. Подсчет очков в игре - поставить на центр экрана
 # 4. Переход между игрой и меню (возможно меню загрузки или обратный отсчет)
 
 
@@ -13,12 +13,13 @@ import time
 import os 
 import random as rnd
 
-LENTH = 150 
+LENTH = 150
 WIDTH = 30
 SPACE = " "
 BRICKS_TEXTURES_PATH = 'bricks/'
 DEFAULT_DISTANCE = 40
-MAX_JUMP = 15
+MAX_JUMP = 10
+NUMBERS_PATH = 'numbers/'
     
 def on_press(key, game):
     if key == keyboard.Key.up:
@@ -98,6 +99,7 @@ class Game:
         self.__going_up = False 
         self._fps = 0
         self.__gameover = False
+        self.__jump_peak = 0
 
     def get_player(self):
         return self.__player
@@ -122,6 +124,8 @@ class Game:
             if self.__going_up:
                 if self.__player.get_y() < to:
                     self.__player.set_y(self.__player.get_y() + 1)
+                elif self.__player.get_y() == to and self.__jump_peak < 4:
+                    self.__jump_peak += 1
                 else:
                     self.__going_up = False
             else:
@@ -129,6 +133,7 @@ class Game:
                     self.__player.set_y(self.__player.get_y() - 1)
                 else:
                     self.__is_jumping = False
+                    self.__jump_peak = 0
 
     def is_intersection(self, points_a, points_b):
         for a in points_a:
@@ -156,7 +161,7 @@ class Game:
         if LENTH - self.__lst_bricks[-1].get_x()  > default_distance:
             self.__lst_bricks.append(self.__make_a_brick())
 
-    def __move_bricks(self):
+    def __move_bricks(self):    
         for item in self.__lst_bricks:
             item.set_x(item.get_x()-1)
             
@@ -213,6 +218,36 @@ class Engine:
         
         return scene
 
+    def make_points(self, points):
+        digits = []
+        while points > 0:
+            digits.append(points % 10)
+            points = points // 10
+        
+        views = []
+        for i in range(len(digits)-1, -1, -1):
+            path = NUMBERS_PATH + str(digits[i]) + '.txt'
+            file = open(path, 'r')
+            lines = file.readlines()
+            views.append(lines)
+            file.close()
+        
+
+        out = ""
+        for i in range(7):
+            row = ""
+            for j in range(len(views)):
+                row += views[j][i][:-1]
+            out += row + '\n'
+
+        file = open('numbers/points.txt', 'w')
+        file.write(out)
+        
+
+    def points_position(self):
+        return LENTH // 2 - len(str(self.__game.get_fps())) * 7 // 2, WIDTH - 10
+
+
     def frame(self):
         
         scene = self.get_scene()
@@ -222,38 +257,49 @@ class Engine:
         for brick in self.__game.get_bricks():
             scene = self.draw_item(brick, scene)
         
-        scene.insert(0, f"{self.__game.get_fps() // 10}\n")
+        self.make_points(self.__game.get_fps() // 10)
+        points = game_object(*self.points_position(), 'numbers/points.txt')
+        scene = self.draw_item(points, scene)
 
         return scene
 
 
-#       ||  
-#       ||
-#       ||
 
-
-#       ---
-#       | |
-#       ---
-
-
-
-#adress
-#по мере ухода из кадра препятсвий - удалять их
 def main():
     player = game_object(0,0,'player.txt')
     brick = game_object(LENTH-3, 0, 'bricks/brick.txt')
     
     game = Game(player, [brick])
     engine = Engine(LENTH, WIDTH, game)
+    engine.make_points(123)
     thrd = controle(game)
+    counter = 0
     while not(game.is_gameover()):
         os.system('clear')
-        game.step()
+        if counter % 3 == 0:
+            game.step()
         print("".join(engine.frame()))
-        time.sleep(0.05)
+        time.sleep(0.01)
+        counter += 1
     thrd.stop()
     
         
 main() 
+
+#Задача 1:  Раскидать код по файлам
+# gameobject.py
+# game.py
+# engine.py
+# main.py
+
+# Задача 2: Добавить еще варианты препятсвий 
+# - кактусы
+# - заборы
+# - и тд
+
+# Задача 3: Меню
+# Основную часть делает Алим, потом выдает задачи для остальных
+
+# Задача 4: Анимация прыжка и бега
+# Поискать ascii-котов в пряжке и беге
 
