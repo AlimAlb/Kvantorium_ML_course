@@ -12,6 +12,7 @@ from pynput import keyboard
 import time
 import os 
 import random as rnd
+import colorama
 
 LENTH = 150
 WIDTH = 30
@@ -24,11 +25,24 @@ NUMBERS_PATH = 'numbers/'
 def on_press(key, game):
     if key == keyboard.Key.up:
         game.jump()
-        
+
+def menu_on_press(key, menu):
+    if key == keyboard.Key.up:
+        menu.up()
+    elif key == keyboard.Key.down:
+        menu.down()
+    elif key == keyboard.Key.space:
+        menu.is_chosen = True
 
 def controle(game):
     listener = keyboard.Listener(
     on_press=lambda x: on_press(x, game))
+    listener.start()
+    return listener
+
+def menu_controle(menu):
+    listener = keyboard.Listener(
+    on_press=lambda x: menu_on_press(x, menu))
     listener.start()
     return listener
 
@@ -203,6 +217,7 @@ class Engine:
                 return True
         return False
 
+
     def draw_item(self, item, scene):
         view = item.get_view()
         view_l = len(view[0])
@@ -262,44 +277,172 @@ class Engine:
         scene = self.draw_item(points, scene)
 
         return scene
+    
+
+
+class menu: 
+    def __init__(self, l, w):
+        self.__l = l
+        self.__w = w
+        self.curr_id = 0
+        self.white = colorama.Fore.WHITE
+        self.back = colorama.Back.BLACK
+        self.bwhite = colorama.Back.WHITE
+        self.black = colorama.Fore.BLACK
+        self.is_chosen = False
+        colorama.init(autoreset=True)
+        self.varid = 0
+        self.isChoosed = False
+        self.variants = [
+            {
+                "text":open('start.txt').read(),
+                "data": "print(1, 'var')",
+            },
+            {
+                "text":open('exit.txt').read(),
+                "data": "print(2, 'var')",
+            }
+                    ]   
+    
+    def get_scene(self):
+        scene = []
+        for i in range(self.__w):
+            tmp = ''
+            for j in range(self.__l):
+                tmp += SPACE
+            scene.append(tmp + '\n')
+        return scene
+    
+    def check_boundaries(self, y_len, x_len, curr_y, curr_x):
+        if curr_x >= 0 and curr_x < x_len:
+            if curr_y >= 0 and curr_y < y_len:
+                return True
+        return False
+
+    def up(self):
+        if self.curr_id == 0:
+            self.curr_id = 1
+        else:
+             self.curr_id = 0
+
+    def down(self):
+        if self.curr_id == 1:
+            self.curr_id = 0
+        else:
+             self.curr_id = 1
+
+
+    def draw_item(self, item, scene):
+        view = item.get_view()
+        view_l = len(view[0])
+        view_w = len(view)
+
+        x_start = item.get_x()
+        y_start = len(scene) - 1 - item.get_y()
+        for i in  range(view_w-1, -1, -1):
+            for j in range(view_l-1):
+                args = [len(scene), len(scene[0]), y_start - (view_w-1 - i), x_start +j]
+                if self.check_boundaries(*args):
+                    scene[y_start - (view_w-1 - i)]  = scene[y_start - (view_w-1 - i)][:x_start +j] + view[i][j] + scene[y_start - (view_w-1 - i)][x_start +j+1:]
+        
+        return scene
+    
+    def printVariants(self, variants, variant):
+        for varId, var in enumerate(variants):
+            if varId == variant:
+                print(self.back+self.bwhite+self.black+var["text"])
+            else:
+                print("", self.back+var["text"]) 
+
+
+    def frame(self):
+        start = None
+        exit = None
+        left_arrow = None
+        right_arrow = None
+        if self.curr_id == 0:
+            start = game_object(15, 15+1, "start.txt")
+            exit = game_object(30, 5, "exit.txt")
+            left_arrow = game_object(5, 18, "arrow.txt")
+            right_arrow = game_object(87, 18, "arrow.txt")
+        else:
+            start = game_object(15, 15, "start.txt")
+            exit = game_object(30, 5+1, "exit.txt")
+            left_arrow = game_object(20, 8, "arrow.txt")
+            right_arrow = game_object(70, 8, "arrow.txt")
+        
+    
+        scene = self.get_scene()
+        scene = self.draw_item(start, scene)
+        scene = self.draw_item(exit, scene)
+        scene = self.draw_item(left_arrow, scene)
+        scene = self.draw_item(right_arrow, scene)
+        scene = self.draw_item(game_object(0,0, 'tip.txt'), scene)
+        return scene
+
+
+
+    
+    
+    
+
+
+
+
+    
 
 
 
 def main():
-    player = game_object(0,0,'player.txt')
-    brick = game_object(LENTH-3, 0, 'bricks/brick.txt')
     
-    game = Game(player, [brick])
-    engine = Engine(LENTH, WIDTH, game)
-    engine.make_points(123)
-    thrd = controle(game)
-    counter = 0
-    while not(game.is_gameover()):
-        os.system('clear')
-        if counter % 3 == 0:
-            game.step()
-        print("".join(engine.frame()))
-        time.sleep(0.01)
-        counter += 1
-    thrd.stop()
+
+    #while(not_exit):
+    #if menu
+    #menu loop
+    #else
+    #game loop
+
+    while True:
+        player = game_object(0,0,'player.txt')
+        brick = game_object(LENTH-3, 0, 'bricks/cactus.txt')
+    
+        game = Game(player, [brick])
+        engine = Engine(LENTH, WIDTH, game)
+        mn = menu(LENTH, WIDTH)
+        thrd = menu_controle(mn)
+
+        while not(mn.is_chosen):
+            os.system('clear')
+            print("".join(mn.frame()))  
+            time.sleep(0.1)
+
+        thrd.stop()
+        if mn.curr_id == 0:
+            engine.make_points(123)
+            thrd = controle(game)
+            counter = 0
+            while not(game.is_gameover()):
+              os.system('clear')
+              game.step()
+              print("".join(engine.frame()))
+              time.sleep(0.025)
+              counter += 1
+            thrd.stop()
+            os.system('clear')
+            game_over = engine.draw_item(game_object(20, 5, 'game_over.txt'), engine.frame())
+            for i in range(5):
+                if i % 2 == 0:
+                    print(''.join(game_over))
+                else: 
+                    print(''.join(engine.frame()))
+                time.sleep(1)
+                os.system('clear')
+
+
+        else:
+            break
+
     
         
 main() 
-
-#Задача 1:  Раскидать код по файлам
-# gameobject.py
-# game.py
-# engine.py
-# main.py
-
-# Задача 2: Добавить еще варианты препятсвий 
-# - кактусы
-# - заборы
-# - и тд
-
-# Задача 3: Меню
-# Основную часть делает Алим, потом выдает задачи для остальных
-
-# Задача 4: Анимация прыжка и бега
-# Поискать ascii-котов в пряжке и беге
 

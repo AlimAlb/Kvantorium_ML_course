@@ -126,9 +126,17 @@ def diff(f, x, delta = 0.000000001):
     df = (fdelta - fx)/delta
     return df
 
+
+#f_curr - f_last > 0.001
+
+
+#x = x - step*diff(x)
+
 # y = x^2 + 2x + 1
 y = func(1,2,1)
 
+#ax^2 + bx + c
+#2ax + b
 
 
 #print(y(5))
